@@ -114,7 +114,7 @@ function get_comments_show(weibo_id,button)//
 				sourse:demo.source,
 				text:demo.text,
 			}
-			console.log(demo);
+			//console.log(demo);
 			//console.log("WB[id].comments");
 			WB[weibo_id].comments.push(one_comment);
 		}	
@@ -147,8 +147,8 @@ function get_time_line()//get all weibo
 {
 	ajax('/weibo/get?need=home_timeline',function(result)
 	{
-		var json = JSON.parse(result).statuses;
-		console.log(json.length);
+		var json = JSON.parse(result);
+		console.log(json);
 		//time_lineDiv.innerHTML += "<ul class='ul_time_line' id='ul_time_line'><ul>";
 		var ul_time_line = document.getElementById('ul_time_line');
 		for(var key in json)
@@ -169,7 +169,7 @@ function get_time_line()//get all weibo
 			
 			
 			var htmlStr = "";
-			htmlStr += "<li><div class='weibo_head'><img class='weibo_head_img' src="+demo.user.avatar_large+"></img><span>"+demo.user.name+"</span><br><span>"+demo.created_at+"</span></div>";
+			htmlStr += "<li><div class='weibo_head'><img class='weibo_head_img' src="+demo.user.profile_image_url+"></img><span>"+demo.user.name+"</span><br><span>"+demo.created_at+"</span></div>";
 			htmlStr += "<p class='weibo_retweet'>"+demo.text;
 			if(demo.retweeted_status)
 			{
@@ -177,8 +177,8 @@ function get_time_line()//get all weibo
 				htmlStr += "<div class='weibo_src_tweet'>"+demo.retweeted_status.text+"</div>";
 				if(demo.retweeted_status.original_pic)//if pic is exist
 				{
-					console.log(demo);
-					htmlStr += "<img onclick='src_big_img(this);' class='weibo_img' src="+demo.retweeted_resize_pic+"></img>";
+					//console.log(demo);
+					htmlStr += "<img onclick='src_big_img(this);' class='weibo_img' src="+demo.retweeted_status.thumbnail_pic+"></img>";
 				}
 			}
 			//add repost and comments,it use class weibo_bottom
@@ -187,7 +187,7 @@ function get_time_line()//get all weibo
 			htmlStr += "<span>来自"+demo.id+"<span>";
 			htmlStr += "</div>";
 			htmlStr += "<div class='weibo_handle'>";
-			console.log(demo.comments_count);
+			//console.log(demo.comments_count);
 			if(demo.comments_count != 0)
 			{
 				htmlStr += "<span onclick='get_comments_show("+demo.id+",this);'>评论 "+demo.comments_count+"</span>";
@@ -209,7 +209,7 @@ function get_time_line()//get all weibo
 			
 			htmlStr += "</li>";
 			ul_time_line.innerHTML += htmlStr;				
-			console.log("smallest = " + smallest_weibo_id);
+			//console.log("smallest = " + smallest_weibo_id);
 		}
 		var testHTML = '<div id="weibo_show_more" style="width:100%;height:50px;background:#CCC">show more</div>';
 		document.getElementById('time_line').innerHTML += testHTML;		
@@ -255,7 +255,7 @@ function add_weibo(result)
 
 
 
-		htmlStr += "<li><div class='weibo_head'><img class='weibo_head_img' src="+demo.user.avatar_large+"></img><span>"+demo.user.name+"</span><br><span>"+demo.created_at+"</span></div>";
+		htmlStr += "<li><div class='weibo_head'><img class='weibo_head_img' src="+demo.user.profile_image_url+"></img><span>"+demo.user.name+"</span><br><span>"+demo.created_at+"</span></div>";
 		htmlStr += "<p class='weibo_retweet'>"+demo.text;
 		if(demo.retweeted_status)
 		{
@@ -305,7 +305,12 @@ function add_weibo(result)
 
 function src_big_img(img)
 {
-	img.style.cssText = "width:auto;height:auto;";
+		
+	var big = img.src.replace("thumbnail","large");
+	img.src = big;
+	img.onload = function(){
+		img.style.cssText = "width:auto;height:auto;";
+	}
 	img.onclick = function()
 	{
 		 small_img(img);
@@ -313,8 +318,12 @@ function src_big_img(img)
 	
 }
 function small_img(img)
-{	
-	img.style.cssText = "width:auto;height:200px;";
+{			
+	var small = img.src.replace("large","thumbnail");
+	img.src = small;
+	img.onload = function(){
+		img.style.cssText = "width:auto;height:120;";
+	}
 	img.onclick = function()
 	{
 		src_big_img(img);

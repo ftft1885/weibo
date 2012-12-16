@@ -62,6 +62,8 @@ http.createServer(function(req,res)
 				console.log(opts);
 				getWeiboJson(opts,function(result)//use callback just status
 				{
+					var json_result = JSON.parse(result);
+					console.log(json_result)
 					res.end(result);
 				});				
 			}
@@ -169,7 +171,11 @@ function getWeiboJson(opts,callback)
 		});
 		res.on('end',function()
 		{
+			
 			var result_json = JSON.parse(result).statuses;
+			var myresult = JSON.stringify(result_json);
+			callback(myresult);
+			/*
 			for(var key in result_json)
 			{
 				var resize_retweet_pic	=	"";
@@ -180,11 +186,20 @@ function getWeiboJson(opts,callback)
 					if(demo.retweeted_status.original_pic)
 					{
 						getImg(demo.retweeted_status.original_pic,function(resizeurl){
-							resize_retweet_pic = resizeurl;
 							result_json[key].resize_retweet_pic = resizeurl;
+							getImg(demo.user.avatar_large,function(headresize){
+								result_json[key].resize_head_pic = headresize;
+								
+								{
+									result = JSON.stringify(result_json);
+								//console.log(result);
+									callback(result);
+								}
+							});
 						});
 					}	
 				}
+				/*
 				getImg(demo.user.avatar_large,function(resizeurl){
 					resize_head_pic = resizeurl;
 					result_json[key].resize_head_pic = resizeurl;					
@@ -194,6 +209,8 @@ function getWeiboJson(opts,callback)
 			myresult = JSON.stringify(myresult);
 			
 			callback(result);			
+			*/
+			
 		});
 	});
 }
