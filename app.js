@@ -45,6 +45,25 @@ http.createServer(function(req,res)
 				res.writeHead(200,{'Content-Type':'text/html'});
 				res.end(html);
 			}
+			if(path == "/weibo/imgcheck")
+			{
+				req.on('data',function(data){
+					//console.log(data+"");
+					//res.end(data+"");
+					var url = data + "";
+					http.get(url,function(_res){
+						//console.log(res.headers);
+						var size = _res.headers['content-length'];
+						var json = {
+							size	:	size,
+							id		:	url,
+						}
+						var str = JSON.stringify(json);
+						console.log(str);
+						res.end(str);
+					});
+				});
+			}
 			if(path == "/weibo/get")
 			{
 					
@@ -63,7 +82,7 @@ http.createServer(function(req,res)
 				getWeiboJson(opts,function(result)//use callback just status
 				{
 					var json_result = JSON.parse(result);
-					console.log(json_result)
+					//console.log(json_result)
 					res.end(result);
 				});				
 			}
