@@ -148,6 +148,7 @@ function get_time_line()//get all weibo
 	ajax('/weibo/get?need=home_timeline',function(result)
 	{
 		var json = JSON.parse(result).statuses;
+		console.log(json.length);
 		//time_lineDiv.innerHTML += "<ul class='ul_time_line' id='ul_time_line'><ul>";
 		var ul_time_line = document.getElementById('ul_time_line');
 		for(var key in json)
@@ -176,7 +177,8 @@ function get_time_line()//get all weibo
 				htmlStr += "<div class='weibo_src_tweet'>"+demo.retweeted_status.text+"</div>";
 				if(demo.retweeted_status.original_pic)//if pic is exist
 				{
-					htmlStr += "<img onclick='src_big_img(this);' class='weibo_img' src="+demo.retweeted_status.original_pic+"></img>";
+					console.log(demo);
+					htmlStr += "<img onclick='src_big_img(this);' class='weibo_img' src="+demo.retweeted_resize_pic+"></img>";
 				}
 			}
 			//add repost and comments,it use class weibo_bottom

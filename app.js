@@ -161,7 +161,6 @@ function getWeiboJson(opts,callback)
 		url += "&max_id="+opts.max_id;	
 	}
 	var result = '';
-	$.pic = {};
 	https.get(url,function(res)
 	{
 		res.on('data',function(data)
@@ -170,35 +169,36 @@ function getWeiboJson(opts,callback)
 		});
 		res.on('end',function()
 		{
-			//console.log("big json ..");
-			//console.log(result);	
-			//$.pic = JSON.parse(result);
 			var result_json = JSON.parse(result).statuses;
-
 			for(var key in result_json)
 			{
+				var resize_retweet_pic	=	"";
+				var resize_head_pic		=	"";
 				var demo = result_json[key];
-				//$.pic[demo.id] = [];
 				if(demo.retweeted_status)
 				{
 					if(demo.retweeted_status.original_pic)
 					{
-						//$.pic.status_pic.push(demo.retweeted_status.original_pic);
-						//$.pic[demo.id].push(demo.retweeted_status.original_pic);
-						getImg(demo.retweeted_status.original_pic);
+						getImg(demo.retweeted_status.original_pic,function(resizeurl){
+							resize_retweet_pic = resizeurl;
+							result_json[key].resize_retweet_pic = resizeurl;
+						});
 					}	
 				}
-				//$.pic[demo.id].push(demo.user.avatar_large);
-				getImg(demo.user.avatar_large);
+				getImg(demo.user.avatar_large,function(resizeurl){
+					resize_head_pic = resizeurl;
+					result_json[key].resize_head_pic = resizeurl;					
+				});
 			}
-			//writeFile();
-			//console.log(result_json);
+			var myresult = JSON.stringify(result_json);
+			myresult = JSON.stringify(myresult);
+			
 			callback(result);			
 		});
 	});
 }
 
-function getImg(url)
+function getImg(url,callback)
 {
 	http.get(url,function(res){
 		var img = "";
@@ -211,8 +211,9 @@ function getImg(url)
 		res.on('end',function(){
 			fs.writeFile(path,img,'binary',function(err){
 				if(err) throw err;
-				console.log(name+" saved");
-				resize(name);
+				resize(name,function(url){
+					callback(url);
+				});
 			});
 		});
 	});
@@ -223,35 +224,34 @@ function urlToName(str)
 	return str.replace(/\//g,'_');
 }
 
-function resize(name)
+function resize(name,callback)
 {	
-	var img = new canvas.Image;
-	img.src = '../pic/'+name;
-	var exist = fs.existsSync(img.src);
-	console.log("is exist?"+exist);
-	img.onerror = function(err)
-	{
-		//console.log(_name);
-		throw err;
-	}
-	img.onload = function()
-	{	
-		console.log(img.src+" has loaded");
-		var width = 50;
-		var height = 50;
-		var mycanvas = new canvas(width,height);
-		var ctx = mycanvas.getContext('2d');
-		ctx.drawImage(img,0,0,width,height);
-		mycanvas.toBuffer(function(err,buf)
+	var Image = canvas.Image;
+	var img = new Image;
+	var to_path = "../img/"+name;
+	img.onload = function(){
+		var height	=	100,
+			width	=	100 * img.width / img.height;
+		if(img.height < 100)//if biande
 		{
-			if(err) console.log(_name + ": "+ err);
-			fs.writeFile('zip_pic/'+name,buf,function(err)
-			{
-				if(err) throw err;
-				console.log("resize success");
-			})
+			height = img.height;
+			width  = img.width;
+		}
+		if(name.indexOf('.jpg') == -1 && img.width == img.height)//head img
+		{
+			height	=	50;
+			width	=	50;
+		}
+		var	mycanvas=	new canvas(height,width),
+			ctx		=	mycanvas.getContext('2d');
+		ctx.drawImage(img,0,0,width,height);
+		mycanvas.toBuffer(function(err,buf){
+			fs.writeFile(to_path,buf,function(){
+				callback('42.121.108.75/img/'+name);
+			});
 		});
 	}
+	img.src= "../pic/" + name;
 }
 
 function writeFile()
